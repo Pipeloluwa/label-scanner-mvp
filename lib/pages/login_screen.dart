@@ -1,9 +1,12 @@
 import 'dart:ui';
+import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:label_scanner_mvp/pages/scan_image.dart';
+import 'package:label_scanner_mvp/variables.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,9 +16,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  Dio dio=  Dio();
+
   FocusNode user_focus = FocusNode();
   FocusNode password_focus = FocusNode();
   ValueNotifier<bool> isFocused = ValueNotifier(false);
+
+  TextEditingController usernameController= TextEditingController();
+  TextEditingController passwordController= TextEditingController();
+
 
   @override
   void initState() {
@@ -43,9 +52,44 @@ class _LoginScreenState extends State<LoginScreen> {
         : isFocused.value = false;
   }
 
-  void login() {
-    Navigator.of(context)
-        .pushReplacement(MaterialPageRoute(builder: (context) => ScanImage()));
+  void _displayDialog(String msg){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(
+              msg
+          ),
+        )
+    );
+  }
+  
+  
+  void login() async{
+    final String userName= usernameController.text;
+    final String passWord= passwordController.text;
+    final Map<String, String> jsonData= {'username': userName,'password': passWord};
+
+    try{
+      Response loginRes= await dio.post(
+        urlLogin,
+        data: jsonData,
+        options: Options(
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+      );
+
+      final String bearerToken= loginRes.data.token_type + " " + loginRes.data.access_token;
+
+      Fluttertoast.showToast(msg: bearerToken);
+    }
+    catch(e){
+      // print(e);
+      _displayDialog("Sorry, something went wrong, we could not log you in");
+    }
+
+    // Navigator.of(context)
+    //     .pushReplacement(MaterialPageRoute(builder: (context) => ScanImage())
+    // );
   }
 
   @override
@@ -159,6 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Column(
                                   children: [
                                     TextField(
+                                      controller: usernameController,
                                       // onTap: (){isFocused_();},
                                       // onTapOutside: (event){FocusScope.of(context).unfocus();},
                                       focusNode: user_focus,
@@ -189,6 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           )),
                                     ),
                                     TextField(
+                                      controller: passwordController,
                                       // onTap: (){isFocused_();},
                                       // onTapOutside: (event){FocusScope.of(context).unfocus();},
                                       focusNode: password_focus,

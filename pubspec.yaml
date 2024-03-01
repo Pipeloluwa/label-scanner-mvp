@@ -53,6 +53,9 @@ dev_dependencies:
   simple_circular_progress_bar: ^1.0.2
   loading_indicator: ^3.1.1
   camera_camera: ^3.0.0
+
+  http: ^1.2.0
+  dio: ^5.4.0
 #  mask_for_camera_view: ^2.0.4
 
 #  cunning_document_scanner: ^1.1.4
